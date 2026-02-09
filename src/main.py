@@ -6,10 +6,11 @@ import json
 from typing import List
 from src.models import Load, MessageResponse   
 from src.utils import read_db, write_db
+from typing import Optional
 
 app = FastAPI(title="Acme Logistics Inbound API", 
                   description="API for receiving inbound load data from carriers and forwarding to Acme's internal systems.",
-                  version="0.1")
+                  version="0.2")
 
 @app.get("/")
 def health_check():
@@ -18,27 +19,74 @@ def health_check():
             "system": app.title, 
             "version": app.version}, 
 
-@app.get("/loads", response_model=List[Load])
-def get_all_loads():
-    """Endpoint to retrieve all loads"""
-    return read_db()
-
-@app.get("/loads/{load_id}", response_model=Load) # Cambio a parámetro de ruta
-def get_load(load_id: str):
+@app.get("/loads/{load_id}", response_model=Load, status_code=status.HTTP_200_OK)
+def get_load_by_id(load_id: str):
     """Endpoint to retrieve a specific load information by load_id
-    Args:        load_id (str): Unique identifier for the load
-    Returns:       Load: The load data corresponding to the provided load_id
+
+    Args:        
+    
+        load_id (str): Unique identifier for the load
+
+    Returns:       
+    
+        Load: The load data corresponding to the provided load_id
     """
     load = next((load for load in read_db() if load["load_id"] == load_id), None)
     if load is None:
         raise HTTPException(status_code=404, detail=f"Load with load_id {load_id} not found")
     return load
 
+@app.get("/loads", response_model=List[Load], status_code=status.HTTP_200_OK) 
+def get_loads(
+    origin: Optional[str] = None, 
+    destination: Optional[str] = None, 
+    equipment_type: Optional[str] = None):
+
+    """Endpoint to look for an specific load based on origin, destination, pickup date and equipment type
+    
+    Args:       
+    
+        origin (str): The starting location of the load
+            
+        destination (str): The ending location of the load
+                
+        equipment_type (str): The type of equipment required for the load (e.g., Dry Van, Reefer, Flatbed)
+    
+    Returns:       
+    
+        list[Load]: The list of loads data matching the search criteria, or a 404 error if no matching load is found
+    """
+    loads = read_db()
+
+    if origin:
+        loads = [load for load in loads if load["origin"].lower() == origin.lower()]
+        if not loads:
+            raise HTTPException(status_code=404, detail=f"No matching loads found for this origin: {origin}")
+    if destination:
+        loads = [load for load in loads if load["destination"].lower() == destination.lower()]
+        if not loads:
+            raise HTTPException(status_code=404, detail=f"No matching loads found for this destination: {destination}")
+    if equipment_type:
+        loads = [load for load in loads if load["equipment_type"].lower() == equipment_type.lower()]
+        if not loads:
+            raise HTTPException(status_code=404, detail=f"No matching loads found for this equipment type: {equipment_type}")
+    else:
+        return loads
+
+    if not loads:
+        raise HTTPException(status_code=404, detail=f"No matching loads found for the provided search criteria.")
+    return loads
+
 @app.post("/loads", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
 def add_load(new_load: Load):
     """Endpoint to include  a new load into our system
-    Args:        new_load (Load): The load data to be added, validated against the Load model
-    Returns:       str: Confirmation message with the load_id and total number of loads"""
+    Args:        
+    
+        new_load (Load): The load data to be added, validated against the Load model
+
+    Returns:       
+    
+        MessageResponse: Confirmation message with the load_id and total number of loads"""
     
     # Process the load data (e.g., save to database, forward to internal systems)
     # For this example, we'll just print it to the console
