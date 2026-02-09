@@ -1,9 +1,10 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
+from datetime import datetime
 
 
 class Load(BaseModel):
-    load_id: Field(..., description="Unique identifier for the load")
+    load_id: str =  Field(..., description="Unique identifier for the load")
     origin: str = Field(..., min_length=3, max_length=100)
     destination: str = Field(..., min_length=3, max_length=100)
     pickup_datetime: datetime
@@ -22,4 +23,7 @@ class Load(BaseModel):
     def validate_datetimes(cls,v: datetime, info):
         if 'pickup_datetime' in info.data and v <= info.data['pickup_datetime']:
                 raise ValueError('delivery_datetime must be after pickup_datetime')
-            return v
+        return v
+
+class MessageResponse(BaseModel):
+    message: str = Field(..., description="Response message confirming the action taken")
