@@ -7,10 +7,18 @@ from typing import List
 from src.models import Load, MessageResponse   
 from src.utils import read_db, write_db
 from typing import Optional
+from fastapi import Request, Header
+
+
 
 app = FastAPI(title="Acme Logistics Inbound API", 
                   description="API for receiving inbound load data from carriers and forwarding to Acme's internal systems.",
                   version="0.2")
+
+@app.middleware("http")
+async def verify_happy_robot_request(request: Request, call_next):
+    response = await call_next(request)
+    return response
 
 @app.get("/")
 def health_check():

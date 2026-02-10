@@ -1,6 +1,6 @@
 [
     {
-        "load_id": "L-001",
+        "load_id": "1",
         "origin": "Miami, FL",
         "destination": "New York, NY",
         "pickup_datetime": "2026-03-01T10:00:00",
@@ -14,7 +14,7 @@
         "dimensions": "48ft"
     },
     {
-        "load_id": "L-002",
+        "load_id": "2",
         "origin": "Los Angeles",
         "destination": "Chicago, IL",
         "pickup_datetime": "2026-03-05T08:00:00",
@@ -28,7 +28,7 @@
         "dimensions": "53ft"
     },
     {
-        "load_id": "L-003",
+        "load_id": "3",
         "origin": "Houston, TX",
         "destination": "Atlanta, GA",
         "pickup_datetime": "2026-03-10T09:00:00",
@@ -42,7 +42,7 @@
         "dimensions": "48ft"
     },
     {
-        "load_id": "L-004",
+        "load_id": "4",
         "origin": "Houston, TX",
         "destination": "Atlanta, GA",
         "pickup_datetime": "2026-04-10T09:00:00",
@@ -57,7 +57,7 @@
         "dimensions": "48ft"
     },
     {
-        "load_id": "L-005",
+        "load_id": "5",
         "origin": "ORLANDO, FL",
         "destination": "New York, NY",
         "pickup_datetime": "2026-03-04T10:00:00",
@@ -72,7 +72,7 @@
         "dimensions": "48ft"
     },
     {
-        "load_id": "L-006",
+        "load_id": "6",
         "origin": "ORLANDO, FL",
         "destination": "New York, NY",
         "pickup_datetime": "2026-03-04T10:00:00",
@@ -87,9 +87,9 @@
         "dimensions": "48ft"
     },
     {
-        "load_id": "L-007",
+        "load_id": "7",
         "origin": "ORLANDO, FL",
-        "destination": "New York, NY",
+        "destination": "New York",
         "pickup_datetime": "2026-03-04T10:00:00",
         "delivery_datetime": "2026-03-05T15:00:00",
         "equipment_type": "Flatbed",
@@ -102,7 +102,7 @@
         "dimensions": "48ft"
     },
     {
-        "load_id": "L-008",
+        "load_id": "8",
         "origin": "New York",
         "destination": "Phoenix",
         "pickup_datetime": "2026-02-09T00:38:43.860000Z",
