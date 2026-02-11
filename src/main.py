@@ -11,9 +11,11 @@ from fastapi import Request, Header
 
 
 
-app = FastAPI(title="Acme Logistics Inbound API", 
-                  description="API for receiving inbound load data from carriers and forwarding to Acme's internal systems.",
-                  version="0.2")
+app = FastAPI(
+    title="Acme Logistics Inbound API", 
+    description="API for receiving inbound load data from carriers and forwarding to Acme's internal systems.",
+    version="0.2"
+)
 
 @app.middleware("http")
 async def verify_happy_robot_request(request: Request, call_next):
@@ -26,23 +28,6 @@ def health_check():
     return {"status": "online", 
             "system": app.title, 
             "version": app.version}, 
-
-@app.get("/loads/{load_id}", response_model=Load, status_code=status.HTTP_200_OK)
-def get_load_by_id(load_id: str):
-    """Endpoint to retrieve a specific load information by load_id
-
-    Args:        
-    
-        load_id (str): Unique identifier for the load
-
-    Returns:       
-    
-        Load: The load data corresponding to the provided load_id
-    """
-    load = next((load for load in read_db() if load["load_id"] == load_id), None)
-    if load is None:
-        raise HTTPException(status_code=404, detail=f"Load with load_id {load_id} not found")
-    return load
 
 @app.get("/loads", response_model=List[Load], status_code=status.HTTP_200_OK) 
 def get_loads(
@@ -64,26 +49,55 @@ def get_loads(
     
         list[Load]: The list of loads data matching the search criteria, or a 404 error if no matching load is found
     """
-    loads = read_db()
+    filtered_loads = read_db()
 
+    # 2. Aplicamos filtros uno tras otro sobre el resultado anterior
     if origin:
-        loads = [load for load in loads if load["origin"].lower() == origin.lower()]
-        if not loads:
-            raise HTTPException(status_code=404, detail=f"No matching loads found for this origin: {origin}")
+        filtered_loads = [
+            load for load in filtered_loads 
+            if load["origin"].lower() == origin.lower()
+        ]
+
     if destination:
-        loads = [load for load in loads if load["destination"].lower() == destination.lower()]
-        if not loads:
-            raise HTTPException(status_code=404, detail=f"No matching loads found for this destination: {destination}")
+        filtered_loads = [
+            load for load in filtered_loads 
+            if load["destination"].lower() == destination.lower()
+        ]
+
     if equipment_type:
-        loads = [load for load in loads if load["equipment_type"].lower() == equipment_type.lower()]
-        if not loads:
-            raise HTTPException(status_code=404, detail=f"No matching loads found for this equipment type: {equipment_type}")
+        filtered_loads = [
+            load for load in filtered_loads 
+            if load["equipment_type"].lower() == equipment_type.lower()
+        ]
+    
+    if not filtered_loads:
+        raise HTTPException(
+            status_code=404, 
+            detail="No matching loads found for the provided search criteria."
+        )
     else:
-        return loads
+        return filtered_loads
 
     if not loads:
         raise HTTPException(status_code=404, detail=f"No matching loads found for the provided search criteria.")
     return loads
+
+@app.get("/loads/{load_id}", response_model=Load, status_code=status.HTTP_200_OK)
+def get_load_by_id(load_id: str):
+    """Endpoint to retrieve a specific load information by load_id
+
+    Args:        
+    
+        load_id (str): Unique identifier for the load
+
+    Returns:       
+    
+        Load: The load data corresponding to the provided load_id
+    """
+    load = next((load for load in read_db() if load["load_id"] == load_id), None)
+    if load is None:
+        raise HTTPException(status_code=404, detail=f"Load with load_id {load_id} not found")
+    return load
 
 @app.post("/loads", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
 def add_load(new_load: Load):
@@ -115,4 +129,3 @@ def add_load(new_load: Load):
     write_db(loads)
     
     return MessageResponse(message=f"Load with load_id {new_load.load_id} received successfully. Total loads: {len(loads)}")    
-
