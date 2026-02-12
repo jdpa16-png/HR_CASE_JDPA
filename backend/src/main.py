@@ -1,7 +1,6 @@
 import os
-from fastapi import FastAPI, HTTPException, status, Security
-from fastapi import Request, Headers
-from fastapi.security.api_key import APIKeyHeader
+from fastapi import FastAPI, HTTPException, status, Depends
+from fastapi import Request
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 import json
@@ -11,9 +10,6 @@ from src.utils import read_db, write_db, get_api_key
 from typing import Optional
 
 
-
-API_KEY_NAME = "X-API-KEY"
-api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
 
 app = FastAPI(
