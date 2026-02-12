@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 from datetime import datetime
-from sqlmodel import SQLModel, Field, create_engine, Session
+from sqlmodel import SQLModel, Field
 
 
 class Load(BaseModel):
@@ -30,7 +30,7 @@ class MessageResponse(BaseModel):
     message: str = Field(..., description="Response message confirming the action taken")
 
 class CallLog(SQLModel, table=True):
-    Run_ID: str  = Field(default=None, primary_key=True)
+    Run_ID: str = Field(primary_key=True)
     Carrier_Legal_Name: Optional[str] = None
     mc_number: Optional[str] = None
     Load_ID_Searched: Optional[int] = None
@@ -40,12 +40,11 @@ class CallLog(SQLModel, table=True):
     original_rate: Optional[float] = None
     final_rate: Optional[float] = None
     turns: Optional[int] = None
-    flag_closed_deal: bool = False
-    was_transferred: bool = False
+    
+    # These must be real booleans in the DB
+    flag_closed_deal: Optional[str] = Field(default=False)
+    was_transferred:  Optional[str] = Field(default=False)
+    
     call_tag: str
     carrier_sentiment: str
     transcript: Optional[str] = None
-    
-    
-    
-    

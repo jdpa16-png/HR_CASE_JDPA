@@ -137,12 +137,13 @@ def add_load(new_load: Load):
     
     return MessageResponse(message=f"Load with load_id {new_load.load_id} received successfully. Total loads: {len(loads)}")    
 
-
-#Call Log Endpoints 
 @app.post("/log_call")
 def log_call(data: CallLog):
-    with Session(engine) as session:
-        session.add(data)
-        session.commit()
-        session.refresh(data)
-    return {"status": "saved", "id": data.Run_ID}
+    try:
+        with Session(engine) as session:
+            session.add(data)
+            session.commit()
+            session.refresh(data)
+        return {"status": "success", "run_id": data.Run_ID}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
