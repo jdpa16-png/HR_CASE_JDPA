@@ -36,16 +36,19 @@ def get_api_key(api_key_header: str = Security(api_key_header)):
     )
 
 
-#Database setup 
-user = os.getenv("DB_USER")
-password = os.getenv("DB_PASSWORD")
-host = os.getenv("DB_HOST")
-port = os.getenv("DB_PORT", "5432")
-db_name = os.getenv("DB_NAME")
 
-# Construct the URL
-DATABASE_URL = f"postgresql://{user}:{password}@{host}:{port}/{db_name}"
-engine = create_engine(DATABASE_URL)
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if not DATABASE_URL:
+    user = os.getenv("DB_USER", "postgres")
+    password = os.getenv("DB_PASSWORD", "password")
+    host = os.getenv("DB_HOST", "db")
+    port = os.getenv("DB_PORT", "5432")
+    db_name = os.getenv("DB_NAME", "logistics_db")
+    DATABASE_URL = f"postgresql://{user}:{password}@{host}:{port}/{db_name}"
+
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 def init_db():
     SQLModel.metadata.create_all(engine)
