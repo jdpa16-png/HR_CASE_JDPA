@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 from datetime import datetime
+from sqlmodel import SQLModel, Field, create_engine, Session
 
 
 class Load(BaseModel):
@@ -9,7 +10,7 @@ class Load(BaseModel):
     destination: str = Field(..., min_length=3, max_length=100)
     pickup_datetime: datetime
     delivery_datetime: datetime
-    equipment_type: str = Field(..., pattern=r"^(Dry Van|Reefer|Flatbed)$", description="Equipment type must be one of: Dry Van, Reefer, Flatbed")
+    equipment_type: str = Field(..., regex=r"^(Dry Van|Reefer|Flatbed)$", description="Equipment type must be one of: Dry Van, Reefer, Flatbed")
     loadboard_rate: float = Field(gt=0, description="rate must be greater than 0")
     notes: Optional[str] = None
     weight: int = Field(..., gt=0, description="weight must be greater than 0")
@@ -27,3 +28,24 @@ class Load(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str = Field(..., description="Response message confirming the action taken")
+
+class CallLog(SQLModel, table=True):
+    Run_ID: str  = Field(default=None, primary_key=True)
+    Carrier_Legal_Name: Optional[str] = None
+    mc_number: Optional[str] = None
+    Load_ID_Searched: Optional[int] = None
+    Origin: Optional[str] = None
+    destination: Optional[str] = None
+    Equiptment_type: Optional[str] = None
+    original_rate: Optional[float] = None
+    final_rate: Optional[float] = None
+    turns: Optional[int] = None
+    flag_closed_deal: bool = False
+    was_transferred: bool = False
+    call_tag: str
+    carrier_sentiment: str
+    transcript: Optional[str] = None
+    
+    
+    
+    

@@ -5,10 +5,10 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 import json
 from typing import List
-from src.models import Load, MessageResponse   
-from src.utils import read_db, write_db, get_api_key
+from src.models import Load, MessageResponse, CallLog
+from src.utils import read_static_db, write_static_db, get_api_key, engine, init_db
 from typing import Optional
-
+from sqlmodel import Session
 
 
 
@@ -24,6 +24,11 @@ async def verify_happy_robot_request(request: Request, call_next):
     response = await call_next(request)
     return response
 
+@app.on_event("startup")
+def on_startup():
+    init_db()
+
+# Load Management Endpoints
 @app.get("/")
 def health_check():
     """Health check endpoint to verify the service is running."""
@@ -51,7 +56,7 @@ def get_loads(
     
         list[Load]: The list of loads data matching the search criteria, or a 404 error if no matching load is found
     """
-    filtered_loads = read_db()
+    filtered_loads = read_static_db()
 
     # 2. Aplicamos filtros uno tras otro sobre el resultado anterior
     if origin:
@@ -96,7 +101,7 @@ def get_load_by_id(load_id: str):
     
         Load: The load data corresponding to the provided load_id
     """
-    load = next((load for load in read_db() if load["load_id"] == load_id), None)
+    load = next((load for load in read_static_db() if load["load_id"] == load_id), None)
     if load is None:
         raise HTTPException(status_code=404, detail=f"Load with load_id {load_id} not found")
     return load
@@ -117,7 +122,7 @@ def add_load(new_load: Load):
     print(f"Received load: {new_load}")
 
     # In a real implementation, you would save the load data to a database or forward it to another service here
-    loads = read_db()
+    loads = read_static_db()
 
     if any(load['load_id'] == new_load.load_id for load in loads):
         raise HTTPException(
@@ -128,6 +133,16 @@ def add_load(new_load: Load):
     #jsonable_encoder is used to convert the Pydantic model to a JSON-serializable format
     new_load_data = jsonable_encoder(new_load)
     loads.append(new_load_data)
-    write_db(loads)
+    write_static_db(loads)
     
     return MessageResponse(message=f"Load with load_id {new_load.load_id} received successfully. Total loads: {len(loads)}")    
+
+
+#Call Log Endpoints 
+@app.post("/log_call")
+def log_call(data: CallLog):
+    with Session(engine) as session:
+        session.add(data)
+        session.commit()
+        session.refresh(data)
+    return {"status": "saved", "id": data.Run_ID}
