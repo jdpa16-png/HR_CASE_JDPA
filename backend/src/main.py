@@ -1,20 +1,26 @@
 import os
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Security
+from fastapi import Request, Headers
+from fastapi.security.api_key import APIKeyHeader
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 import json
 from typing import List
 from src.models import Load, MessageResponse   
-from src.utils import read_db, write_db
+from src.utils import read_db, write_db, get_api_key
 from typing import Optional
-from fastapi import Request, Header
 
+
+
+API_KEY_NAME = "X-API-KEY"
+api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
 
 app = FastAPI(
     title="Acme Logistics Inbound API", 
     description="API for receiving inbound load data from carriers and forwarding to Acme's internal systems.",
-    version="0.2"
+    version="0.3",
+    dependencies=[Depends(get_api_key)]
 )
 
 @app.middleware("http")

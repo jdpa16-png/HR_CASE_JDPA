@@ -15,3 +15,15 @@ def read_db() -> List[dict]:
 def write_db(data: List[dict]):
     with open(DATA_PATH, "w") as f:
         json.dump(jsonable_encoder(data), f, indent=4)
+
+def get_api_key(api_key_header: str = Security(api_key_header)):
+    # Pull the expected key from Railway Environment Variables
+    expected_key = os.getenv("INTERNAL_API_KEY")
+    
+    if api_key_header == expected_key:
+        return api_key_header
+    
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Could not validate credentials",
+    )
