@@ -163,6 +163,10 @@ def log_call(data: CallLog):
     Args: data (CallLog): SQL Schema 
 
     Returns:  Status of insertion"""
+
+    data.was_transfered_flag = str(data.was_transfered_flag).lower() == "true"
+    data.flag_closed_deal = str(data.flag_closed_deal).lower() == "true"
+
     try:
         with Session(engine) as session:
             session.add(data)
