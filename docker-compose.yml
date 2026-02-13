@@ -13,6 +13,15 @@ services:
       - DB_NAME=${DB_NAME}
     volumes:
       - ./backend/data:/app/data
+  frontend:
+    build: 
+      context: ./frontend
+      args:
+        - VITE_API_URL=http://localhost:8000
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
   db:
     image: postgres:15-alpine
     env_file:
@@ -22,7 +31,6 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
     healthcheck:
-      # Use the mapped POSTGRES_USER here
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
       timeout: 5s
