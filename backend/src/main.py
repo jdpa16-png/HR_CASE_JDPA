@@ -164,7 +164,7 @@ def log_call(data: CallLog):
 
     Returns:  Status of insertion"""
 
-    data.was_transfered_flag = str(data.was_transfered_flag).lower() == "true"
+    data.was_transferred = str(data.was_transfered_flag).lower() == "true"
     data.flag_closed_deal = str(data.flag_closed_deal).lower() == "true"
 
     try:
