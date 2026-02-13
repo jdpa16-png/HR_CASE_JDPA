@@ -172,6 +172,18 @@ def log_call(data: CallLog):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@app.post("/bulk_log_call_extraction", status_code=status.HTTP_201_CREATED)
+def add_bulk_loads(new_loads: List[CallLog]): # Accept a List
+    with Session(engine) as session:
+        for load in new_loads:
+            # Check for existing Run_ID to avoid primary key conflicts
+            existing = session.get(CallLog, load.Run_ID)
+            if not existing:
+                session.add(load)
+        
+        session.commit()
+        return {"message": f"Successfully processed {len(new_loads)} loads."}
+
 @app.get("/all_call_extractions")
 def get_all_call_extractions():
     """Fetch all call logs from the database for the dashboard."""
