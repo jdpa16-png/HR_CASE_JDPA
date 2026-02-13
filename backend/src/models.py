@@ -42,8 +42,8 @@ class CallLog(SQLModel, table=True):
     turns: Optional[int] = None
     
     # These must be real booleans in the DB
-    flag_closed_deal: Optional[str] = Field(default=False)
-    was_transferred:  Optional[str] = Field(default=False)
+    flag_closed_deal: bool = Field(default=False)
+    was_transferred:  bool = Field(default=False)
     
     call_tag: str
     carrier_sentiment: str
