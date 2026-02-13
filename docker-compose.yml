@@ -18,6 +18,7 @@ services:
       context: ./frontend
       args:
         - VITE_API_URL=http://localhost:8000
+        - VITE_INTERNAL_API_KEY=${INTERNAL_API_KEY}
     ports:
       - "80:80"
     depends_on:
