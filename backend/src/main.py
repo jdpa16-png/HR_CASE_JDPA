@@ -154,7 +154,7 @@ def add_load(new_load: Load):
     
     return MessageResponse(message=f"Load with load_id {new_load.load_id} received successfully. Total loads: {len(loads)}")    
 
-@app.post("/log_call")
+@app.post("/log_call_extraction")
 def log_call(data: CallLog):
     try:
         with Session(engine) as session:
@@ -165,10 +165,82 @@ def log_call(data: CallLog):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.get("/stats", response_model=List[CallLog])
-def get_stats():
+@app.get("/all_call_extractions", response_model=List[CallLog])
+def get_all_call_extractions():
     """Fetch all call logs from the database for the dashboard."""
     with Session(engine) as session:
         statement = select(CallLog)
         results = session.exec(statement).all()
         return results
+
+@app.get("/call_analytics")
+def get_analytics():
+    with Session(engine) as session:
+        # 1. Fetch all logs for calculation
+        statement = select(CallLog)
+        logs = session.exec(statement).all()
+        
+        if not logs:
+            return {"message": "No data available"}
+
+        # --- Basic Stats ---
+        total_calls = len(logs)
+        closed_calls = [l for l in logs if l.flag_closed_deal]
+        total_closed = len(closed_calls)
+        
+        # Success Rate
+        success_rate = (total_closed / total_calls) * 100 if total_calls > 0 else 0
+        
+        # Financial Ratio: sum(final) / sum(initial)
+        sum_final = sum(l.final_rate or 0 for l in logs)
+        sum_initial = sum(l.original_rate or 0 for l in logs)
+        rate_efficiency = (sum_final / sum_initial) * 100 if sum_initial > 0 else 0
+
+        # --- Aggregations (Success by Origin) ---
+        origin_stats = {}
+        for l in logs:
+            origin = l.Origin or "Unknown"
+            if origin not in origin_stats:
+                origin_stats[origin] = {"total": 0, "closed": 0}
+            origin_stats[origin]["total"] += 1
+            if l.flag_closed_deal:
+                origin_stats[origin]["closed"] += 1
+
+        # --- Sentiment & Tags ---
+        sentiment_dist = {}
+        tag_dist = {}
+        for l in logs:
+            # Sentiment
+            s = l.carrier_sentiment or "Neutral"
+            sentiment_dist[s] = sentiment_dist.get(s, 0) + 1
+            # Call Tag
+            t = l.call_tag or "Other"
+            tag_dist[t] = tag_dist.get(t, 0) + 1
+
+        # --- Evolution of Metrics (By Date) ---
+        # Grouping success rate by day
+        evolution = {}
+        for l in logs:
+            # Use the date part of your date_time
+            date_key = l.date_time.date().isoformat() if l.date_time else "Unknown"
+            if date_key not in evolution:
+                evolution[date_key] = {"total": 0, "closed": 0}
+            evolution[date_key]["total"] += 1
+            if l.flag_closed_deal:
+                evolution[date_key]["closed"] += 1
+
+        return {
+            "summary": {
+                "total_calls": total_calls,
+                "total_closed": total_closed,
+                "success_rate": round(success_rate, 2),
+                "rate_efficiency_ratio": round(rate_efficiency, 2),
+                "avg_negotiation_turns": round(sum(l.turns or 0 for l in logs) / total_calls, 1)
+            },
+            "origin_success": origin_stats,
+            "sentiment_distribution": sentiment_dist,
+            "tag_distribution": tag_dist,
+            "evolution": evolution
+        }
+
+    
