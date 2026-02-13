@@ -10,11 +10,11 @@ The Happy Robot Frontend is a high-performance React application built with Vite
   * *Right Axis*: Success Percentage (Line).
 * **Origin Success Matrix**: Diagram chart showing performance by city.
 
-***2. Data Integrity & Security***
+**2. Data Integrity & Security**
 *  ***API Key Interceptor***: Uses Axios interceptors to automatically attach the ```x-api-key``` to every outgoing request.
 *  ***Environment Parity***: Configured to switch between local development and production Railway environments seamlessly.
 
-***3. Interactive Log Explorer***
+**3. Interactive Log Explorer**
 *  A searchable and sortable table of all call extractions.
 *  **Visual Tags***: Sentiment and deal status are color-coded (Green for success, Red for failure) to allow for quick auditing.
 
