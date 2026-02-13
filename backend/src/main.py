@@ -10,7 +10,13 @@ from src.utils import read_static_db, write_static_db, get_api_key, engine, init
 from typing import Optional
 from sqlmodel import Session
 
+from fastapi.middleware.cors import CORSMiddleware
+from sqlmodel import select
 
+origins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+]
 
 app = FastAPI(
     title="Acme Logistics Inbound API", 
@@ -18,6 +24,17 @@ app = FastAPI(
     version="0.3",
     dependencies=[Depends(get_api_key)]
 )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+
 
 @app.middleware("http")
 async def verify_happy_robot_request(request: Request, call_next):
@@ -147,3 +164,11 @@ def log_call(data: CallLog):
         return {"status": "success", "run_id": data.Run_ID}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/stats", response_model=List[CallLog])
+def get_stats():
+    """Fetch all call logs from the database for the dashboard."""
+    with Session(engine) as session:
+        statement = select(CallLog)
+        results = session.exec(statement).all()
+        return results

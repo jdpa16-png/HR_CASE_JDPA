@@ -36,7 +36,7 @@ class CallLog(SQLModel, table=True):
     Load_ID_Searched: Optional[int] = None
     Origin: Optional[str] = None
     destination: Optional[str] = None
-    Equipment_type: Optional[str] = None
+    equipment_type: Optional[str] = None
     original_rate: Optional[float] = None
     final_rate: Optional[float] = None
     turns: Optional[int] = None
@@ -48,3 +48,5 @@ class CallLog(SQLModel, table=True):
     call_tag: str
     carrier_sentiment: str
     transcript: Optional[str] = None
+
+    date_time: datetime = Field(default_factory=datetime.utcnow)
