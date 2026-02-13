@@ -13,11 +13,6 @@ from sqlmodel import Session
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import select
 
-origins = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-]
-
 app = FastAPI(
     title="Acme Logistics Inbound API", 
     description="API for receiving inbound load data from carriers and forwarding to Acme's internal systems.",
@@ -27,28 +22,36 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+async def verify_api_key(request: Request):
+    if request.method == "OPTIONS":
+        return
+    
+    api_key = request.headers.get("x-api-key")
+    if api_key != os.getenv("INTERNAL_API_KEY"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credentials"
+        )
 
+app.dependency_overrides = {} 
+app.router.dependencies.append(Depends(verify_api_key))
 
-
-@app.middleware("http")
-async def verify_happy_robot_request(request: Request, call_next):
-    response = await call_next(request)
-    return response
 
 @app.on_event("startup")
 def on_startup():
     init_db()
 
-# Load Management Endpoints
 @app.get("/")
 def health_check():
-    """Health check endpoint to verify the service is running."""
+    """
+    Health check endpoint to verify the service is running.
+    """
     return {"status": "online", 
             "system": app.title, 
             "version": app.version}, 
@@ -156,6 +159,10 @@ def add_load(new_load: Load):
 
 @app.post("/log_call_extraction")
 def log_call(data: CallLog):
+    """Endpoint to load a call extraction in our Database
+    Args: data (CallLog): SQL Schema 
+
+    Returns:  Status of insertion"""
     try:
         with Session(engine) as session:
             session.add(data)
@@ -165,7 +172,7 @@ def log_call(data: CallLog):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.get("/all_call_extractions", response_model=List[CallLog])
+@app.get("/all_call_extractions")
 def get_all_call_extractions():
     """Fetch all call logs from the database for the dashboard."""
     with Session(engine) as session:
@@ -175,6 +182,9 @@ def get_all_call_extractions():
 
 @app.get("/call_analytics")
 def get_analytics():
+    """ 
+    Get Consolidated analysis of the stored calls
+    """
     with Session(engine) as session:
         # 1. Fetch all logs for calculation
         statement = select(CallLog)
