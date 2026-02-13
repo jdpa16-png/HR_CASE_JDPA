@@ -2,22 +2,43 @@
 
 A full-stack logistics monitoring solution that tracks carrier negotiations, success rates, and financial efficiency in real-time.
 
-## 🏗️ Architecture
-* **Frontend**: React + Vite + Tailwind CSS + Recharts.
-* **Backend**: FastAPI + SQLModel (SQLAlchemy).
-* **Database**: PostgreSQL (Hosted on Railway).
-* **Security**: Global API Key Authentication & HTTPS.
+## 🏗️ Architecture & Stack
+
+The project is architected into three distinct instances for scalability and separation of concerns:
+
+- **Frontend Instance**: React + Vite + Tailwind CSS + Recharts. 
+- **Backend Instance**: FastAPI + SQLModel (SQLAlchemy).
+- **Database Instance (BBDD)**: PostgreSQL for persistent, structured storage.
+- **Security**: 
+    - **Global API Key Authentication**: Every endpoint is protected via a mandatory `x-api-key` header.
+    - **HTTPS**: Managed SSL termination provided by Railway.
+    - **Data Sanitization**: Backend logic converts incoming frontend strings to native Boolean bits.
+
+---
 
 ## 🚀 Live Deployment
 * **Dashboard**: https://fde-happyrobbot-production-ff33.up.railway.app/
 * **API Documentation**: https://fde-happyrobbot-production.up.railway.app/docs
 
 ---
-## 🔄 How to Reproduce Your Deployment on Railway
+## 🔄 How to Reproduce Locally (Docker)
+
+To spin up all three instances (Front, End, and BBDD) locally with a single command:
+
+1. **Ensure Docker and Docker Compose are installed.**
+2. **Run the build command:**
+   ```bash
+   docker-compose up --build
+   ```
+3. **Access the services:**
+ - **Frontend**: ```http://localhost:5173```
+ - **Backend API**: ```http://localhost:8000```
+---
+## ☁️ How to Reproduce Your Deployment on Railway
 ### Step 1: Clone the Repository
 If you haven't already cloned your repository, do so now:
 ```bash
-git clone [https://github.com/jdpa16-png/PRUEBA_JDPA.git](https://github.com/jdpa16-png/HR_CASE_JDPA.git)
+git clone https://github.com/jdpa16-png/PRUEBA_JDPA.git
 cd HR_CASE_JDPA
 ```
 
