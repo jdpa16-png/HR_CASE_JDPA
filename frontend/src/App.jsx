@@ -39,12 +39,10 @@ export default function App() {
 
   if (loading) return <div className="p-20 text-center text-slate-500">Loading Dashboard...</div>;
   
-  // Guard clause: If data is empty or formatted incorrectly
   if (!data || !data.summary) {
     return <div className="p-20 text-center">Data loaded but summary is missing. Check backend.</div>;
   }
 
-  // Safe transformations using optional chaining
   const evolutionData = data.evolution 
   ? Object.entries(data.evolution)
       .map(([date, stats]) => ({

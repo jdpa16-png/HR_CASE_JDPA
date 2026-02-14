@@ -78,7 +78,6 @@ def get_loads(
     """
     filtered_loads = read_static_db()
 
-    # 2. Aplicamos filtros uno tras otro sobre el resultado anterior
     if origin:
         filtered_loads = [
             load for load in filtered_loads 
@@ -137,11 +136,8 @@ def add_load(new_load: Load):
     
         MessageResponse: Confirmation message with the load_id and total number of loads"""
     
-    # Process the load data (e.g., save to database, forward to internal systems)
-    # For this example, we'll just print it to the console
     print(f"Received load: {new_load}")
 
-    # In a real implementation, you would save the load data to a database or forward it to another service here
     loads = read_static_db()
 
     if any(load['load_id'] == new_load.load_id for load in loads):
@@ -150,7 +146,6 @@ def add_load(new_load: Load):
             detail=f"The load ID {new_load.load_id} already exists in the system."
         )
 
-    #jsonable_encoder is used to convert the Pydantic model to a JSON-serializable format
     new_load_data = jsonable_encoder(new_load)
     loads.append(new_load_data)
     write_static_db(loads)
@@ -166,6 +161,7 @@ def log_call(data: CallLog):
 
     data.was_transferred = str(data.was_transferred).lower() == "true"
     data.flag_closed_deal = str(data.flag_closed_deal).lower() == "true"
+    
 
     try:
         with Session(engine) as session:
@@ -177,10 +173,9 @@ def log_call(data: CallLog):
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/bulk_log_call_extraction", status_code=status.HTTP_201_CREATED)
-def add_bulk_loads(new_loads: List[CallLog]): # Accept a List
+def add_bulk_loads(new_loads: List[CallLog]):
     with Session(engine) as session:
         for load in new_loads:
-            # Check for existing Run_ID to avoid primary key conflicts
             existing = session.get(CallLog, load.Run_ID)
             if not existing:
                 session.add(load)
@@ -202,27 +197,23 @@ def get_analytics():
     Get Consolidated analysis of the stored calls
     """
     with Session(engine) as session:
-        # 1. Fetch all logs for calculation
         statement = select(CallLog)
         logs = session.exec(statement).all()
         
         if not logs:
             return {"message": "No data available"}
 
-        # --- Basic Stats ---
         total_calls = len(logs)
         closed_calls = [l for l in logs if l.flag_closed_deal]
         total_closed = len(closed_calls)
         
-        # Success Rate
         success_rate = (total_closed / total_calls) * 100 if total_calls > 0 else 0
         
-        # Financial Ratio: sum(final) / sum(initial)
+
         sum_final = sum(l.final_rate or 0 for l in logs)
         sum_initial = sum(l.original_rate or 0 for l in logs)
         rate_efficiency = (sum_final / sum_initial) * 100 if sum_initial > 0 else 0
 
-        # --- Aggregations (Success by Origin) ---
         origin_stats = {}
         for l in logs:
             origin = l.Origin or "Unknown"
@@ -232,22 +223,17 @@ def get_analytics():
             if l.flag_closed_deal:
                 origin_stats[origin]["closed"] += 1
 
-        # --- Sentiment & Tags ---
+
         sentiment_dist = {}
         tag_dist = {}
         for l in logs:
-            # Sentiment
             s = l.carrier_sentiment or "Neutral"
             sentiment_dist[s] = sentiment_dist.get(s, 0) + 1
-            # Call Tag
             t = l.call_tag or "Other"
             tag_dist[t] = tag_dist.get(t, 0) + 1
 
-        # --- Evolution of Metrics (By Date) ---
-        # Grouping success rate by day
         evolution = {}
         for l in logs:
-            # Use the date part of your date_time
             date_key = l.date_time.date().isoformat() if l.date_time else "Unknown"
             if date_key not in evolution:
                 evolution[date_key] = {"total": 0, "closed": 0}

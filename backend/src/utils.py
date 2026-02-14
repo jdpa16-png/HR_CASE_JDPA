@@ -6,7 +6,6 @@ from fastapi import HTTPException, status, Security
 from fastapi.security.api_key import APIKeyHeader
 from sqlmodel import create_engine, SQLModel
 
-#Static Data Json Loads
 DATA_PATH = os.path.join(os.path.dirname(__file__), "../data/loads.json")
 def read_static_db() -> List[dict]:
     if not os.path.exists(DATA_PATH):
@@ -19,12 +18,10 @@ def write_static_db(data: List[dict]):
         json.dump(jsonable_encoder(data), f, indent=4)
 
 
-#API Key Authentication
 API_KEY_NAME = "X-API-KEY"
 api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
 def get_api_key(api_key_header: str = Security(api_key_header)):
-    # Pull the expected key from Railway Environment Variables
     expected_key = os.getenv("INTERNAL_API_KEY")
     
     if api_key_header == expected_key:

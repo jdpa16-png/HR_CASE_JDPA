@@ -41,7 +41,6 @@ class CallLog(SQLModel, table=True):
     final_rate: Optional[float] = None
     turns: Optional[int] = None
     
-    # These must be real booleans in the DB
     flag_closed_deal: bool = Field(default=False)
     was_transferred:  bool = Field(default=False)
     
