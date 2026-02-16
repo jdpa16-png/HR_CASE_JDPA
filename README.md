@@ -26,19 +26,20 @@ The project is architected into three distinct instances for scalability and sep
 To spin up all three instances (Front, End, and BBDD) locally with a single command:
 
 1. **Ensure Docker and Docker Compose are installed.**
-2. **Run the build command:**
+2. **Create ```.Env``` file is created with this variables** ```(INTERNAL_API_KEY, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME, DATABASE_URL, VITE_INTERNAL_API_KEY, VITE_API_URL)```
+4. **Run the build command:**
    ```bash
    docker-compose up --build
    ```
-3. **Access the services:**
- - **Frontend**: ```http://localhost:5173```
+5. **Access the services:**
+ - **Frontend**: ```http://localhost:80``` (Note that in case you dont add any post-call extraction the display will be: *Data loaded but summary is missing. Check backend*. In order to post one do it through -> *```POST Log_call_extraction```*
  - **Backend API**: ```http://localhost:8000```
 ---
 ## ☁️ How to Reproduce Your Deployment on Railway
 ### Step 1: Clone the Repository
 If you haven't already cloned your repository, do so now:
 ```bash
-git clone https://github.com/jdpa16-png/PRUEBA_JDPA.git
+git clone https://github.com/jdpa16-png/HR_CASE_JDPA.git
 cd HR_CASE_JDPA
 ```
 
